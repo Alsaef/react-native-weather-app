@@ -21,13 +21,7 @@ const WeatherCard: React.FC<WeatherCardProps> = ({ location, temperature }) => {
 const WeatherApp = () => {
   const [city, setCity] = useState('');
   const [weather, setWeather] = useState<{ location: string; temperature: number} | null>(null);
-  const [loading,setLoading]=useState(true)
 
-  useEffect(()=>{
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000); 
-  },[])
   const fetchWeather = () => {
     // Replace with actual API call
     if (!city.trim()) {
@@ -52,11 +46,6 @@ const WeatherApp = () => {
     })
   };
 
-  if (loading) {
-    return(
-         <Loading/>
-    )
-  }
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Weather App</Text>
@@ -69,7 +58,7 @@ const WeatherApp = () => {
         
         
       />
-      <TouchableOpacity style={styles.button} onPress={fetchWeather}>
+      <TouchableOpacity  style={styles.button} onPress={fetchWeather}>
         <Text style={styles.buttonText}>Get Weather</Text>
       </TouchableOpacity>
       {weather && <WeatherCard {...weather} />}

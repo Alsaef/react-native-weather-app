@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
@@ -7,10 +7,24 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import Loading from '@/components/Loading';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const [loading,setLoading]=useState(true)
 
+  useEffect(()=>{
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000); 
+  },[])
+
+
+    if (loading) {
+      return(
+           <Loading/>
+      )
+    }
   return (
     <Tabs
       screenOptions={{
