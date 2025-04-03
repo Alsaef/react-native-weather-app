@@ -1,74 +1,148 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import Loading from '@/components/Loading';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+interface WeatherCardProps {
+  location: string;
+  temperature: number;
 }
 
+const WeatherCard: React.FC<WeatherCardProps> = ({ location, temperature }) => {
+  return (
+    <View style={styles.card}>
+      <Text style={styles.location}>{location}</Text>
+      <Ionicons name="partly-sunny" size={50} color="white" />
+      <Text style={styles.temperature}>{temperature.toFixed(0)}°C</Text>
+    </View>
+  );
+};
+
+const WeatherApp = () => {
+  const [city, setCity] = useState('');
+  const [weather, setWeather] = useState<{ location: string; temperature: number} | null>(null);
+  const [loading,setLoading]=useState(true)
+
+  useEffect(()=>{
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000); 
+  },[])
+  const fetchWeather = () => {
+    // Replace with actual API call
+    if (!city.trim()) {
+      alert("City is required!");
+      return;
+    }
+
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=38ac41421a83143fa944eeb737309a14`)
+    .then(res=>res.json())
+    .then(data=>{
+      if (data.cod === "404") {
+        console.error("City not found. Please enter a valid city name.");
+      }
+     else{
+      setWeather({
+        location: city || 'New York',
+        temperature: data.main.temp - 273.15,
+       
+      })
+      console.log(data.main);
+     }
+    })
+  };
+
+  if (loading) {
+    return(
+         <Loading/>
+    )
+  }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Weather App</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter city name"
+        placeholderTextColor="#ddd"
+        value={city}
+        onChangeText={setCity}
+        
+        
+      />
+      <TouchableOpacity style={styles.button} onPress={fetchWeather}>
+        <Text style={styles.buttonText}>Get Weather</Text>
+      </TouchableOpacity>
+      {weather && <WeatherCard {...weather} />}
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: '#1E1E1E',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  input: {
+    width: '100%',
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#555',
+    borderRadius: 8,
+    backgroundColor: '#333',
+    color: '#fff',
+    marginBottom: 10,
+  },
+  button: {
+    backgroundColor: '#FF9800',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 20,
+  },
+  buttonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  card: {
+    backgroundColor: '#2196F3',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 250,
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  location: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  temperature: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: 'white',
+  },
+  condition: {
+    fontSize: 18,
+    color: 'white',
   },
 });
+
+export default WeatherApp;
